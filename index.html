@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRP J/L Cut Tool</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+        input, select, button { width: 100%; padding: 10px; margin: 10px 0; font-size: 16px; }
+        button { background: #0066cc; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0052a3; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; display: none; }
+        .success { background: #d4edda; color: #155724; display: block; }
+        .error { background: #f8d7da; color: #721c24; display: block; }
+        .processing { background: #d1ecf1; color: #0c5460; display: block; }
+    </style>
+</head>
+<body>
+    <h1>DRP J/L Cut Tool</h1>
+    <p>Apply J-cuts or L-cuts to DaVinci Resolve projects</p>
+    
+    <form id="uploadForm">
+        <label><strong>Select .drp file:</strong></label>
+        <input type="file" id="drpFile" accept=".drp" required>
+        
+        <label><strong>Cut Type:</strong></label>
+        <select id="cutType">
+            <option value="L">L-Cut (Audio trails after video cut)</option>
+            <option value="J">J-Cut (Audio leads before video cut)</option>
+        </select>
+        
+        <label><strong>Offset (frames):</strong></label>
+        <input type="number" id="offset" value="8" min="1" max="20" required>
+        
+        <button type="submit" id="submitBtn">Process File</button>
+    </form>
+    
+    <div id="status" class="status"></div>
+    
+    <hr>
+    <small>
+        <strong>What are J/L cuts?</strong><br>
+        • <strong>L-Cut:</strong> Audio from current clip continues after video cuts<br>
+        • <strong>J-Cut:</strong> Audio from next clip starts before video cuts<br>
+        <br>
+        <strong>API:</strong> https://drp-jl-cut-api-production.up.railway.app<br>
+        <strong>Rate limit:</strong> 5 uploads per hour
+    </small>
+    
+    <script>
+        const API_URL = 'https://drp-jl-cut-api-production.up.railway.app/api/process';
+        
+        document.getElementById('uploadForm').onsubmit = async (e) => {
+            e.preventDefault();
+            
+            const file = document.getElementById('drpFile').files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('cut_type', document.getElementById('cutType').value);
+            formData.append('offset', document.getElementById('offset').value);
+            
+            const status = document.getElementById('status');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            submitBtn.disabled = true;
+            status.className = 'status processing';
+            status.textContent = 'Processing your file... This may take a few seconds.';
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const cutType = document.getElementById('cutType').value;
+                    const filename = file.name.replace('.drp', ` (${cutType} cuts added).drp`);
+                    
+                    // Download file
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    status.className = 'status success';
+                    status.textContent = '✓ Success! Downloading: ' + filename;
+                    
+                    // Reset after 3 seconds
+                    setTimeout(() => {
+                        status.style.display = 'none';
+                    }, 3000);
+                } else {
+                    const error = await response.json();
+                    status.className = 'status error';
+                    status.textContent = 'Error: ' + (error.detail || 'Failed to process file');
+                }
+            } catch (err) {
+                status.className = 'status error';
+                status.textContent = 'Error: ' + err.message + '. Check your internet connection.';
+            } finally {
+                submitBtn.disabled = false;
+            }
+        };
+    </script>
+</body>
+</html>
+
