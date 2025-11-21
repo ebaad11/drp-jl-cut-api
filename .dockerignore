@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# Test files
+test_*.py
+*_test.py
+
+# Sample/test DRP files (keep only original for reference)
+*.drp
+!J_cut_test.drp
+
+# Documentation
+*.md
+README*
+IMPLEMENTATION_SUMMARY.md
+QUICK_START.md
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+api.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Extracted samples
+extracted_sample/
+
+# Other project files not needed in API
+main.py
+test_modules.py
+test_full_workflow.sh
+iris_j_cut_timelin.zip
+
+# Requirements (we only need requirements-api.txt)
+requirements.txt
+
+

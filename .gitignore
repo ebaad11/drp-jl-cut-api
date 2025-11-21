@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# Test outputs
+test_output*.drp
+my_test.drp
+new_output*.drp
+docker_test.drp
+
+# Logs
+*.log
+api.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Extracted samples
+extracted_sample/
